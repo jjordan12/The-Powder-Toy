@@ -202,7 +202,7 @@
 #define PROP_NEUTPASS		0x0200 //512 Neutrons pass through, such as with glass
 #define PROP_DEADLY			0x0400 //1024 Is deadly for stickman.
 #define FLAG_STAGNANT	1
-#define INIT_FP_VARS() int r; int t = parts[i].type; int x = parts[i].x; int y = parts[i].y; int nx; int ny
+#define INIT_FP_VARS() int r; int rt; int t = parts[i].type; int x = parts[i].x; int y = parts[i].y; int nx; int ny
 struct particle
 {
     int type;
@@ -269,6 +269,8 @@ typedef struct part_state part_state;
 int update_CLNE(int i);
 int update_COAL(int i);
 int update_BCOL(int i);
+int update_BMTL(int i);
+
 /* END FUNCTION POINTERS */
 
 static const part_type ptypes[PT_NUM] =
@@ -303,7 +305,7 @@ static const part_type ptypes[PT_NUM] =
     {"SALT",	PIXPACK(0xFFFFFF),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	1,	1,	75,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	110, NULL,	"Salt, dissolves in water.", TYPE_PART},
     {"SLTW",	PIXPACK(0x4050F0),	0.6f,	0.01f * CFDS,	0.98f,	0.95f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	2,	0,		0,	0,	20,	1,	35,		SC_LIQUID,		R_TEMP+0.0f	+273.15f,	75,	NULL,	"Saltwater, conducts electricity, difficult to freeze.", TYPE_LIQUID|PROP_CONDUCTS|PROP_NEUTPENETRATE},
     {"DMND",	PIXPACK(0xCCFFFF),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	100,	SC_SPECIAL,		R_TEMP+0.0f	+273.15f,	186, NULL,	"Diamond. Indestructable.", TYPE_SOLID}, //ief015 - Added diamond. Because concrete blocks are kinda pointless.
-    {"BMTL",	PIXPACK(0x505070),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Breakable metal.", TYPE_SOLID|PROP_CONDUCTS},
+    {"BMTL",	PIXPACK(0x505070),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	251, &update_BMTL,	"Breakable metal.", TYPE_SOLID|PROP_CONDUCTS},
     {"BRMT",	PIXPACK(0x705060),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	2,	2,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	211, NULL,	"Broken metal.", TYPE_PART|PROP_CONDUCTS},
     {"PHOT",	PIXPACK(0xFFFFFF),	0.0f,	0.00f * CFDS,	1.00f,	1.00f,	-0.99f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	-1,		SC_ELEC,		R_TEMP+900.0f+273.15f,	251, NULL,	"Photons. Travel in straight lines.", TYPE_ENERGY},
     {"URAN",	PIXPACK(0x707020),	0.4f,	0.01f * CFDS,	0.99f,	0.95f,	0.0f,	0.4f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	0,	1,	90,		SC_NUCLEAR,		R_TEMP+30.0f+273.15f,	251, NULL,	"Heavy particles. Generates heat under pressure.", TYPE_PART},

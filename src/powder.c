@@ -899,6 +899,7 @@ int update_CLNE(int i) {
 	else {
 		create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
 	}
+	return 0;
 }
 
 int update_COAL(int i) {
@@ -946,7 +947,7 @@ int update_BCOL(int i) {
 		t = PT_NONE;
 		kill_part(i);
 		create_part(-1, x, y, PT_FIRE);
-		goto killed;
+		return 1;
 	} else if(parts[i].life < 100) {
 		parts[i].life--;
 		create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
@@ -967,6 +968,31 @@ int update_BCOL(int i) {
 					}
 				}
 			}
+	return 0;
+}
+
+int update_BMTL(int i) {
+	INIT_FP_VARS();
+	if(parts[i].tmp>1) {
+		parts[i].tmp--;
+		for(nx=-1; nx<2; nx++)
+			for(ny=-1; ny<2; ny++)
+				if(x+nx>=0 && y+ny>0 && x+nx<XRES && y+ny<YRES && (nx || ny))
+				{
+					r = pmap[y+ny][x+nx];
+					if((r>>8)>=NPART || !r)
+						continue;
+					rt = parts[r>>8].type;
+					if((rt==PT_METL || rt==PT_IRON) && 1>(rand()/(RAND_MAX/100)))
+					{
+						parts[r>>8].type=PT_BMTL;
+						parts[r>>8].tmp=(parts[i].tmp<=7)?parts[i].tmp=1:parts[i].tmp-(rand()%5);//rand()/(RAND_MAX/300)+100;
+					}
+				}
+	} else if(parts[i].tmp==1 && 1>rand()%1000) {
+		parts[i].tmp = 0;
+		t = parts[i].type = PT_BRMT;
+	}
 }
 
 /* END FUNCTION POINTERS */
@@ -1788,28 +1814,6 @@ void update_particles_i(pixel *vid, int start, int inc)
                             }
                         }
             }
-            else if(t==PT_BMTL) {
-                if(parts[i].tmp>1) {
-                    parts[i].tmp--;
-                    for(nx=-1; nx<2; nx++)
-                        for(ny=-1; ny<2; ny++)
-                            if(x+nx>=0 && y+ny>0 && x+nx<XRES && y+ny<YRES && (nx || ny))
-                            {
-                                r = pmap[y+ny][x+nx];
-                                if((r>>8)>=NPART || !r)
-                                    continue;
-                                rt =parts[r>>8].type;
-                                if((rt==PT_METL || rt==PT_IRON) && 1>(rand()/(RAND_MAX/100)))
-                                {
-                                    parts[r>>8].type=PT_BMTL;
-                                    parts[r>>8].tmp=(parts[i].tmp<=7)?parts[i].tmp=1:parts[i].tmp-(rand()%5);//rand()/(RAND_MAX/300)+100;
-                                }
-                            }
-                } else if(parts[i].tmp==1 && 1>rand()%1000) {
-                    parts[i].tmp = 0;
-                    t = parts[i].type = PT_BRMT;
-                }
-            }
 
             else if(t==PT_IRON) {
                 for(nx=-1; nx<2; nx++)
@@ -1849,7 +1853,7 @@ void update_particles_i(pixel *vid, int start, int inc)
                             }
                         }
             }
-			if(t==PT_COAL||t==PT_CLNE||t==PT_BCOL)
+			if(ptypes[t].update_func)
 			{
 				if(ptypes[t].update_func(i))
 					goto killed;
