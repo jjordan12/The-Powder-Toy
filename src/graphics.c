@@ -19,7 +19,7 @@
 #define INCLUDE_FONTDATA
 #include <font.h>
 #include <misc.h>
-
+f
 
 unsigned cmode = CM_FIRE;
 SDL_Surface *sdl_scrn;
