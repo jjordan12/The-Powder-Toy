@@ -266,8 +266,9 @@ typedef struct part_state part_state;
  */
 
 /* BEGIN FUNCTION POINTERS */
-int update_COAL(int i);
 int update_CLNE(int i);
+int update_COAL(int i);
+int update_BCOL(int i);
 /* END FUNCTION POINTERS */
 
 static const part_type ptypes[PT_NUM] =
@@ -346,7 +347,7 @@ static const part_type ptypes[PT_NUM] =
     {"FUSE",	PIXPACK(0x0A5706),	0.0f,   0.00f * CFDS,   0.90f,  0.00f,  0.0f,   0.0f,   0.0f,   0.0f	* CFDS, 0,	0,		0,	0,	20,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	200, NULL,	"Solid. Burns slowly. Ignites at somewhat high temperatures and electricity.", TYPE_SOLID},
     {"FSEP",	PIXPACK(0x63AD5F),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	30,	1,	70,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,	NULL,	"Fuse Powder. See FUSE.", TYPE_PART},
     {"AMTR",	PIXPACK(0x808080),	0.7f,   0.02f * CFDS,   0.96f,  0.80f,  0.00f,  0.10f,  1.00f,  0.0000f * CFDS, 0,	0,		0,	0,	0,	1,	100,	SC_NUCLEAR,	 	R_TEMP+0.0f +273.15f,	70,	NULL,	"Anti-Matter, Destroys a majority of particles", TYPE_PART}, //Maybe TYPE_ENERGY?
-    {"BCOL",	PIXPACK(0x333333),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	2,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	150, NULL,	"Broken Coal. Heavy particles. See COAL", TYPE_PART},
+    {"BCOL",	PIXPACK(0x333333),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	2,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	150, &update_BCOL,	"Broken Coal. Heavy particles. See COAL", TYPE_PART},
     {"PCLN",	PIXPACK(0x3B3B10),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Solid. When actived, duplicates any particles it touches.", TYPE_SOLID},
     {"HSWC",	PIXPACK(0x3B1010),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Heat switch. Conducts Heat only when activated", TYPE_SOLID},
     {"IRON",	PIXPACK(0x707070),	0.0f,	0.00f * CFDS,	0.90f,  0.00f,  0.0f,	0.0f,	0.00f,  0.000f	* CFDS, 0,	0,		0,	1,	50,	0,	100,	SC_SOLIDS,		R_TEMP+0.0f +273.15f,	251, NULL,	"Rusts with salt, can be used for electrlosis of WATR", TYPE_SOLID},

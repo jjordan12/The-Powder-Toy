@@ -940,6 +940,35 @@ int update_COAL(int i) {
 	return 0;
 }
 
+int update_BCOL(int i) {
+	INIT_FP_VARS();
+	if(parts[i].life<=0) {
+		t = PT_NONE;
+		kill_part(i);
+		create_part(-1, x, y, PT_FIRE);
+		goto killed;
+	} else if(parts[i].life < 100) {
+		parts[i].life--;
+		create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
+	}
+
+	for(nx=-2; nx<3; nx++)
+		for(ny=-2; ny<3; ny++)
+			if(x+nx>=0 && y+ny>0 &&
+			   x+nx<XRES && y+ny<YRES && (nx || ny))
+			{
+				r = pmap[y+ny][x+nx];
+				if((r>>8)>=NPART || !r)
+					continue;
+				if(((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM) && 1>(rand()%500))
+				{
+					if(parts[i].life>100) {
+						parts[i].life = 99;
+					}
+				}
+			}
+}
+
 /* END FUNCTION POINTERS */
 
 void update_particles_i(pixel *vid, int start, int inc)
@@ -1820,39 +1849,11 @@ void update_particles_i(pixel *vid, int start, int inc)
                             }
                         }
             }
-			if(t==PT_COAL||t==PT_CLNE)
+			if(t==PT_COAL||t==PT_CLNE||t==PT_BCOL)
 			{
 				if(ptypes[t].update_func(i))
 					goto killed;
 			}
-            else if(t==PT_BCOL)
-            {
-                if(parts[i].life<=0) {
-                    t = PT_NONE;
-                    kill_part(i);
-                    create_part(-1, x, y, PT_FIRE);
-                    goto killed;
-                } else if(parts[i].life < 100) {
-                    parts[i].life--;
-                    create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
-                }
-
-                for(nx=-2; nx<3; nx++)
-                    for(ny=-2; ny<3; ny++)
-                        if(x+nx>=0 && y+ny>0 &&
-                                x+nx<XRES && y+ny<YRES && (nx || ny))
-                        {
-                            r = pmap[y+ny][x+nx];
-                            if((r>>8)>=NPART || !r)
-                                continue;
-                            if(((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM) && 1>(rand()%500))
-                            {
-                                if(parts[i].life>100) {
-                                    parts[i].life = 99;
-                                }
-                            }
-                        }
-            }
 			else if(t==PT_ARAY && parts[i].life==0){
 				for(nx=-1; nx<2; nx++){
                     for(ny=-1; ny<2; ny++){
