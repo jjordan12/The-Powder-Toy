@@ -270,7 +270,9 @@ int update_CLNE(int i);
 int update_COAL(int i);
 int update_BCOL(int i);
 int update_BMTL(int i);
-
+int update_FUSE(int i);
+int update_FSEP(int i);
+int update_SEMCUN(int i); // NTCT, PTCT, and INWR
 /* END FUNCTION POINTERS */
 
 static const part_type ptypes[PT_NUM] =
@@ -319,10 +321,10 @@ static const part_type ptypes[PT_NUM] =
     {"WHOL",	PIXPACK(0xEFEFEF),	0.0f,	0.00f * CFDS,	0.95f,	0.00f,	0.0f,	0.0f,	0.00f,	0.010f	* CFDS,	0,	0,		0,	0,	0,	1,	100,	SC_SPECIAL,		R_TEMP-16.0f+273.15f,	255, NULL,	"White hole, pushes other particles away.", TYPE_SOLID},
     {"RBDM",	PIXPACK(0xCCCCCC),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	1000,	1,	50,	1,	1,	100,	SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	240, NULL,	"Rubidium, explosive, especially on contact with water, low melting point", TYPE_SOLID|PROP_CONDUCTS},
     {"LRBD",	PIXPACK(0xAAAAAA),	0.3f,	0.02f * CFDS,	0.95f,	0.80f,	0.0f,	0.15f,	0.00f,	0.000001f* CFDS,2,	1000,	1,	0,	2,	1,	45,		SC_EXPLOSIVE,	R_TEMP+45.0f+273.15f,	170, NULL,	"Liquid Rubidium.", TYPE_LIQUID|PROP_CONDUCTS},
-    {"NTCT",	PIXPACK(0x505040),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Semi-conductor. Only conducts electricity when hot (More than 100C)", TYPE_SOLID},
+    {"NTCT",	PIXPACK(0x505040),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, &update_SEMCUN,	"Semi-conductor. Only conducts electricity when hot (More than 100C)", TYPE_SOLID},
     {"SAND",	PIXPACK(0xFFD090),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	1,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	150, NULL,	"Sand, Heavy particles. Meltable.", TYPE_PART},
     {"GLAS",	PIXPACK(0x404040),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	150, NULL,	"Solid. Meltable. Shatters under pressure", TYPE_SOLID | PROP_NEUTPASS},
-    {"PTCT",	PIXPACK(0x405050),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Semi-conductor. Only conducts electricity when cold (Less than 120C)", TYPE_SOLID},
+    {"PTCT",	PIXPACK(0x405050),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, &update_SEMCUN,	"Semi-conductor. Only conducts electricity when cold (Less than 120C)", TYPE_SOLID},
     {"BGLA",	PIXPACK(0x606060),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	2,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	150, NULL,	"Broken Glass, Heavy particles. Meltable. Bagels.", TYPE_PART},
     {"THDR",	PIXPACK(0xFFFFA0),	0.0f,	0.00f * CFDS,	1.0f,	0.30f,	-0.99f,	0.6f,	0.62f,	0.000f	* CFDS,	0,	0,		0,	0,	0,	1,	1,		SC_ELEC,		9000.0f		+273.15f,	251, NULL,	"Lightning! Very hot, inflicts damage upon most materials, transfers current to metals.", TYPE_ENERGY},
     {"PLSM",	PIXPACK(0xBB99FF),	0.9f,	0.04f * CFDS,	0.97f,	0.20f,	0.0f,	-0.1f,	0.30f,	0.001f	* CFDS,	0,	0,		0,	0,	0,	1,	1,		SC_GAS,			9000.0f		+273.15f,	115, NULL,	"Plasma, extremely hot.", TYPE_GAS},
@@ -338,7 +340,7 @@ static const part_type ptypes[PT_NUM] =
     {"COAL",	PIXPACK(0x222222),	0.0f,   0.00f * CFDS,   0.90f,  0.00f,  0.0f,   0.0f,   0.0f,   0.0f	* CFDS, 0,	0,		0,	0,	20,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	200, &update_COAL,	"Solid. Burns slowly.", TYPE_SOLID},
     {"LO2",		PIXPACK(0x80A0EF),	0.6f,	0.01f * CFDS,	0.98f,	0.95f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	2,	5000,  	0,	0,	0,	1,	30,		SC_LIQUID,		80.0f,					70,	NULL,	"Liquid Oxygen. Very cold. Reacts with fire", TYPE_LIQUID},
     {"O2",		PIXPACK(0x80A0FF),	2.0f,   0.00f * CFDS,   0.99f,	0.30f,	-0.1f,	0.0f,	3.0f,	0.000f	* CFDS,	0,	1000,  	0,	0,	0,	1,	1,		SC_GAS,		 	R_TEMP+0.0f	+273.15f,   70,	NULL,	"Gas. Ignites easily.", TYPE_GAS},
-    {"INWR",	PIXPACK(0x544141),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Insulated Wire. Doesn't conduct to metal or semiconductors.", TYPE_SOLID},
+    {"INWR",	PIXPACK(0x544141),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	1,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, &update_SEMCUN,	"Insulated Wire. Doesn't conduct to metal or semiconductors.", TYPE_SOLID},
     {"YEST",	PIXPACK(0xEEE0C0),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	15,		0,	0,	30,	1,	80,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,	NULL,	"Yeast, grows when warm (~37C).", TYPE_PART},
     {"DYST",	PIXPACK(0xBBB0A0),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	20,		0,	0,	30,	0,	80,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,	NULL,	"Dead Yeast.", TYPE_PART},
     {"THRM",	PIXPACK(0xA08090),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	2,	2,	1,	90,		SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	211, NULL,	"Thermite. Burns at extremly high temperature.", TYPE_PART},
@@ -346,8 +348,8 @@ static const part_type ptypes[PT_NUM] =
     {"BRCK",	PIXPACK(0x808080),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Brick, breakable building material.", TYPE_SOLID},
     {"CFLM",	PIXPACK(0x8080FF),	0.9f,	0.04f * CFDS,	0.97f,	0.20f,	0.0f,	-0.1f,	0.00f,	0.0005f	* CFDS,	1,	0,		0,	0,	1,	1,	2,		SC_SPECIAL,		0.0f,					88,	NULL,	"Sub-zero flame.", TYPE_GAS},
     {"FIRW",	PIXPACK(0xFFA040),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	-0.99f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	30,	1,	55,		SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	70,	NULL,	"Fireworks!", TYPE_PART},
-    {"FUSE",	PIXPACK(0x0A5706),	0.0f,   0.00f * CFDS,   0.90f,  0.00f,  0.0f,   0.0f,   0.0f,   0.0f	* CFDS, 0,	0,		0,	0,	20,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	200, NULL,	"Solid. Burns slowly. Ignites at somewhat high temperatures and electricity.", TYPE_SOLID},
-    {"FSEP",	PIXPACK(0x63AD5F),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	30,	1,	70,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,	NULL,	"Fuse Powder. See FUSE.", TYPE_PART},
+    {"FUSE",	PIXPACK(0x0A5706),	0.0f,   0.00f * CFDS,   0.90f,  0.00f,  0.0f,   0.0f,   0.0f,   0.0f	* CFDS, 0,	0,		0,	0,	20,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	200, &update_FUSE,	"Solid. Burns slowly. Ignites at somewhat high temperatures and electricity.", TYPE_SOLID},
+    {"FSEP",	PIXPACK(0x63AD5F),	0.7f,	0.02f * CFDS,	0.96f,	0.80f,	0.0f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	0,	30,	1,	70,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	70,	&update_FSEP,	"Fuse Powder. See FUSE.", TYPE_PART},
     {"AMTR",	PIXPACK(0x808080),	0.7f,   0.02f * CFDS,   0.96f,  0.80f,  0.00f,  0.10f,  1.00f,  0.0000f * CFDS, 0,	0,		0,	0,	0,	1,	100,	SC_NUCLEAR,	 	R_TEMP+0.0f +273.15f,	70,	NULL,	"Anti-Matter, Destroys a majority of particles", TYPE_PART}, //Maybe TYPE_ENERGY?
     {"BCOL",	PIXPACK(0x333333),	0.4f,	0.04f * CFDS,	0.94f,	0.95f,	-0.1f,	0.3f,	0.00f,	0.000f	* CFDS,	1,	0,		0,	5,	2,	1,	90,		SC_POWDERS,		R_TEMP+0.0f	+273.15f,	150, &update_BCOL,	"Broken Coal. Heavy particles. See COAL", TYPE_PART},
     {"PCLN",	PIXPACK(0x3B3B10),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	100,	SC_ELEC,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Solid. When actived, duplicates any particles it touches.", TYPE_SOLID},

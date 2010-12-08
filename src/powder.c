@@ -993,6 +993,108 @@ int update_BMTL(int i) {
 		parts[i].tmp = 0;
 		t = parts[i].type = PT_BRMT;
 	}
+	return 0;
+}
+
+int update_FUSE(int i)
+{
+	INIT_FP_VARS();
+	if(parts[i].life<=0) {
+		//t = parts[i].life = PT_NONE;
+		kill_part(i);
+		r = create_part(-1, x, y, PT_PLSM);
+		if(r!=-1)
+			parts[r].life = 50;
+		return 1;
+	} else if (parts[i].life < 40) {
+		parts[i].life--;
+		if((rand()%100)==0) {
+			r = create_part(-1, (nx=x+rand()%3-1), (ny=y+rand()%3-1), PT_PLSM);
+			if(r!=-1)
+				parts[r].life = 50;
+		}
+	}
+	if((pv[y/CELL][x/CELL] > 2.7f)&&parts[i].tmp>40)
+		parts[i].tmp=39;
+	else if(parts[i].tmp<40&&parts[i].tmp>0)
+		parts[i].tmp--;
+	else if(parts[i].tmp<=0) {
+		//t = PT_NONE;
+		kill_part(i);
+		r = create_part(-1, x, y, PT_FSEP);
+		return 1;
+	}
+	for(nx=-2; nx<3; nx++)
+		for(ny=-2; ny<3; ny++)
+			if(x+nx>=0 && y+ny>0 &&
+			   x+nx<XRES && y+ny<YRES && (nx || ny))
+			{
+				r = pmap[y+ny][x+nx];
+				if((r>>8)>=NPART || !r)
+					continue;
+				if((r&0xFF)==PT_SPRK || ((parts[i].temp>=(273.15+700.0f)) && 1>(rand()%20)))
+				{
+					if(parts[i].life>40) {
+						parts[i].life = 39;
+					}
+				}
+			}
+	return 0;
+}
+
+int update_FSEP(int i)
+{
+	INIT_FP_VARS();
+	if(parts[i].life<=0) {
+		//t = PT_NONE;
+		kill_part(i);
+		r = create_part(-1, x, y, PT_PLSM);
+		if(r!=-1)
+			parts[r].life = 50;
+	    return 1;
+	} else if (parts[i].life < 40) {
+		parts[i].life--;
+		if((rand()%10)==0) {
+			r = create_part(-1, (nx=x+rand()%3-1), (ny=y+rand()%3-1), PT_PLSM);
+			if(r!=-1)
+				parts[r].life = 50;
+		}
+	}
+	for(nx=-2; nx<3; nx++)
+		for(ny=-2; ny<3; ny++)
+			if(x+nx>=0 && y+ny>0 &&
+			   x+nx<XRES && y+ny<YRES && (nx || ny))
+			{
+				r = pmap[y+ny][x+nx];
+				if((r>>8)>=NPART || !r)
+					continue;
+				if(((r&0xFF)==PT_SPRK || (parts[i].temp>=(273.15+400.0f))) && 1>(rand()%15))
+				{
+					if(parts[i].life>40) {
+						parts[i].life = 39;
+					}
+				}
+			}
+	return 0;
+}
+
+int update_SEMCUN(int i)
+{
+	INIT_FP_VARS();
+	for(nx=-2; nx<3; nx++)
+		for(ny=-2; ny<3; ny++)
+			if(x+nx>=0 && y+ny>0 &&
+			   x+nx<XRES && y+ny<YRES && (nx || ny))
+			{
+				r = pmap[y+ny][x+nx];
+				if((r>>8)>=NPART || !r)
+					continue;
+				if((r&0xFF)==PT_SPRK && parts[r>>8].ctype==PT_METL && parts_avg(i, r>>8,PT_INSL)!=PT_INSL)
+				{
+					parts[i].temp = 473.0f;
+				}
+			}
+	return 0;
 }
 
 /* END FUNCTION POINTERS */
@@ -1912,98 +2014,6 @@ void update_particles_i(pixel *vid, int start, int inc)
 					}
 				}
 			}
-            else if(t==PT_FUSE)
-            {
-                if(parts[i].life<=0) {
-                    //t = parts[i].life = PT_NONE;
-                    kill_part(i);
-                    r = create_part(-1, x, y, PT_PLSM);
-                    if(r!=-1)
-                        parts[r].life = 50;
-                    goto killed;
-                } else if (parts[i].life < 40) {
-                    parts[i].life--;
-                    if((rand()%100)==0) {
-                        r = create_part(-1, (nx=x+rand()%3-1), (ny=y+rand()%3-1), PT_PLSM);
-                        if(r!=-1)
-                            parts[r].life = 50;
-                    }
-                }
-                if((pv[y/CELL][x/CELL] > 2.7f)&&parts[i].tmp>40)
-                    parts[i].tmp=39;
-                else if(parts[i].tmp<40&&parts[i].tmp>0)
-                    parts[i].tmp--;
-                else if(parts[i].tmp<=0) {
-                    //t = PT_NONE;
-                    kill_part(i);
-                    r = create_part(-1, x, y, PT_FSEP);
-                    goto killed;
-                }
-                for(nx=-2; nx<3; nx++)
-                    for(ny=-2; ny<3; ny++)
-                        if(x+nx>=0 && y+ny>0 &&
-                                x+nx<XRES && y+ny<YRES && (nx || ny))
-                        {
-                            r = pmap[y+ny][x+nx];
-                            if((r>>8)>=NPART || !r)
-                                continue;
-                            if((r&0xFF)==PT_SPRK || ((parts[i].temp>=(273.15+700.0f)) && 1>(rand()%20)))
-                            {
-                                if(parts[i].life>40) {
-                                    parts[i].life = 39;
-                                }
-                            }
-                        }
-            }
-            else if(t==PT_FSEP)
-            {
-                if(parts[i].life<=0) {
-                    //t = PT_NONE;
-                    kill_part(i);
-                    r = create_part(-1, x, y, PT_PLSM);
-                    if(r!=-1)
-                        parts[r].life = 50;
-                    goto killed;
-                } else if (parts[i].life < 40) {
-                    parts[i].life--;
-                    if((rand()%10)==0) {
-                        r = create_part(-1, (nx=x+rand()%3-1), (ny=y+rand()%3-1), PT_PLSM);
-                        if(r!=-1)
-                            parts[r].life = 50;
-                    }
-                }
-                for(nx=-2; nx<3; nx++)
-                    for(ny=-2; ny<3; ny++)
-                        if(x+nx>=0 && y+ny>0 &&
-                                x+nx<XRES && y+ny<YRES && (nx || ny))
-                        {
-                            r = pmap[y+ny][x+nx];
-                            if((r>>8)>=NPART || !r)
-                                continue;
-                            if(((r&0xFF)==PT_SPRK || (parts[i].temp>=(273.15+400.0f))) && 1>(rand()%15))
-                            {
-                                if(parts[i].life>40) {
-                                    parts[i].life = 39;
-                                }
-                            }
-                        }
-            }
-            else if(t==PT_NTCT||t==PT_PTCT||t==PT_INWR)
-            {
-                for(nx=-2; nx<3; nx++)
-                    for(ny=-2; ny<3; ny++)
-                        if(x+nx>=0 && y+ny>0 &&
-                                x+nx<XRES && y+ny<YRES && (nx || ny))
-                        {
-                            r = pmap[y+ny][x+nx];
-                            if((r>>8)>=NPART || !r)
-                                continue;
-                            if((r&0xFF)==PT_SPRK && parts[r>>8].ctype==PT_METL && parts_avg(i, r>>8,PT_INSL)!=PT_INSL)
-                            {
-                                parts[i].temp = 473.0f;
-                            }
-                        }
-            }
             else if(t==PT_PLNT)
             {
                 for(nx=-2; nx<3; nx++)
