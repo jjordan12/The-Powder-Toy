@@ -13,7 +13,6 @@ particle *cb_parts;
 
 unsigned char bmap[YRES/CELL][XRES/CELL];
 unsigned char emap[YRES/CELL][XRES/CELL];
-
 unsigned char cb_bmap[YRES/CELL][XRES/CELL];
 unsigned char cb_emap[YRES/CELL][XRES/CELL];
 
@@ -881,13 +880,29 @@ int nearest_part(int ci, int t)
     return id;
 }
 
+/* BEGIN FUNCTION POINTERS */
+
+int update_CLNE(int i) {
+	INIT_FP_VARS();
+	if(!parts[i].ctype)
+	{
+		for(nx=-1; nx<2; nx++)
+			for(ny=-1; ny<2; ny++)
+				if(x+nx>=0 && y+ny>0 &&
+				   x+nx<XRES && y+ny<YRES &&
+				   pmap[y+ny][x+nx] &&
+				   (pmap[y+ny][x+nx]&0xFF)!=PT_CLNE &&
+				   (pmap[y+ny][x+nx]&0xFF)!=PT_STKM &&
+				   (pmap[y+ny][x+nx]&0xFF)!=0xFF)
+					parts[i].ctype = pmap[y+ny][x+nx]&0xFF;
+	}
+	else {
+		create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
+	}
+}
+
 int update_COAL(int i) {
-	int r;
-	int t = parts[i].type;
-	int x = parts[i].x;
-	int y = parts[i].y;
-	int nx;
-	int ny;
+	INIT_FP_VARS();
 	if(parts[i].life<=0) {
 		t = PT_NONE;
 		kill_part(i);
@@ -924,6 +939,8 @@ int update_COAL(int i) {
 			}
 	return 0;
 }
+
+/* END FUNCTION POINTERS */
 
 void update_particles_i(pixel *vid, int start, int inc)
 {
@@ -1559,6 +1576,7 @@ void update_particles_i(pixel *vid, int start, int inc)
                             t = parts[i].type = PT_ICEI;
                         }
                         else
+
                         {
                             parts[i].life = 0;
                             t = parts[i].type = pstates[t].solid;
@@ -1802,11 +1820,11 @@ void update_particles_i(pixel *vid, int start, int inc)
                             }
                         }
             }
-            else if(t==PT_COAL)
-            {
+			if(t==PT_COAL||t==PT_CLNE)
+			{
 				if(ptypes[t].update_func(i))
 					goto killed;
-            }
+			}
             else if(t==PT_BCOL)
             {
                 if(parts[i].life<=0) {
@@ -3998,25 +4016,6 @@ killed:
                     parts[i].life -= 1;
 
                 isplayer = 1;
-            }
-            if(t==PT_CLNE)
-            {
-                if(!parts[i].ctype)
-                {
-                    for(nx=-1; nx<2; nx++)
-                        for(ny=-1; ny<2; ny++)
-                            if(x+nx>=0 && y+ny>0 &&
-                                    x+nx<XRES && y+ny<YRES &&
-                                    pmap[y+ny][x+nx] &&
-                                    (pmap[y+ny][x+nx]&0xFF)!=PT_CLNE &&
-                                    (pmap[y+ny][x+nx]&0xFF)!=PT_STKM &&
-                                    (pmap[y+ny][x+nx]&0xFF)!=0xFF)
-                                parts[i].ctype = pmap[y+ny][x+nx]&0xFF;
-                }
-                else {
-                    create_part(-1, x+rand()%3-1, y+rand()%3-1, parts[i].ctype);
-                }
-
             }
 	    if(t==PT_BCLN)
             {

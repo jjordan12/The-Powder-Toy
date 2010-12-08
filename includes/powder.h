@@ -202,7 +202,7 @@
 #define PROP_NEUTPASS		0x0200 //512 Neutrons pass through, such as with glass
 #define PROP_DEADLY			0x0400 //1024 Is deadly for stickman.
 #define FLAG_STAGNANT	1
-
+#define INIT_FP_VARS() int r; int t = parts[i].type; int x = parts[i].x; int y = parts[i].y; int nx; int ny
 struct particle
 {
     int type;
@@ -265,7 +265,10 @@ typedef struct part_state part_state;
  * -1 is Neutrons and Photons
  */
 
-int update_COAL(int this);
+/* BEGIN FUNCTION POINTERS */
+int update_COAL(int i);
+int update_CLNE(int i);
+/* END FUNCTION POINTERS */
 
 static const part_type ptypes[PT_NUM] =
 {
@@ -279,7 +282,7 @@ static const part_type ptypes[PT_NUM] =
     {"LAVA",	PIXPACK(0xE05010),	0.3f,	0.02f * CFDS,	0.95f,	0.80f,	0.0f,	0.15f,	0.00f,	0.0003f	* CFDS,	2,	0,		0,	0,	2,	1,	45,		SC_LIQUID,		R_TEMP+1500.0f+273.15f,	60,	NULL,	"Heavy liquid. Ignites flammable materials. Solidifies when cold.", TYPE_LIQUID},
     {"GUN",		PIXPACK(0xC0C0D0),	0.7f,	0.02f * CFDS,	0.94f,	0.80f,	-0.1f,	0.1f,	0.00f,	0.000f	* CFDS,	1,	600,	1,	0,	10,	1,	85,		SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	97, NULL,		"Light dust. Explosive.", TYPE_PART},
     {"NITR",	PIXPACK(0x20E010),	0.5f,	0.02f * CFDS,	0.92f,	0.97f,	0.0f,	0.2f,	0.00f,	0.000f	* CFDS,	2,	1000,	2,	0,	3,	1,	23,		SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	50,	NULL,	"Liquid. Pressure sensitive explosive.", TYPE_LIQUID},
-    {"CLNE",	PIXPACK(0xFFD010),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	100,	SC_SPECIAL,		R_TEMP+0.0f	+273.15f,	251, NULL,	"Solid. Duplicates any particles it touches.", TYPE_SOLID},
+    {"CLNE",	PIXPACK(0xFFD010),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	1,	1,	100,	SC_SPECIAL,		R_TEMP+0.0f	+273.15f,	251, &update_CLNE,	"Solid. Duplicates any particles it touches.", TYPE_SOLID},
     {"GAS",		PIXPACK(0xE0FF20),	1.0f,	0.01f * CFDS,	0.99f,	0.30f,	-0.1f,	0.0f,	0.75f,	0.001f	* CFDS,	0,	600,	0,	0,	1,	1,	1,		SC_GAS,			R_TEMP+2.0f	+273.15f,	42, NULL,		"Gas. Diffuses. Flammable. Liquifies under pressure.", TYPE_GAS},
     {"C-4",		PIXPACK(0xD080E0),	0.0f,	0.00f * CFDS,	0.90f,	0.00f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	1000,	2,	50,	1,	1,	100,	SC_EXPLOSIVE,	R_TEMP+0.0f	+273.15f,	88,	NULL,	"Solid. Pressure sensitive explosive.", TYPE_SOLID | PROP_NEUTPENETRATE},
     {"GOO",		PIXPACK(0x804000),	0.1f,	0.00f * CFDS,	0.97f,	0.50f,	0.0f,	0.0f,	0.00f,	0.000f	* CFDS,	0,	0,		0,	0,	12,	1,	100,	SC_SOLIDS,		R_TEMP+0.0f	+273.15f,	75, NULL,		"Solid. Deforms and disappears under pressure.", TYPE_SOLID | PROP_NEUTPENETRATE},
