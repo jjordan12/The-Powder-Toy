@@ -881,6 +881,50 @@ int nearest_part(int ci, int t)
     return id;
 }
 
+int update_COAL(int i) {
+	int r;
+	int t = parts[i].type;
+	int x = parts[i].x;
+	int y = parts[i].y;
+	int nx;
+	int ny;
+	if(parts[i].life<=0) {
+		t = PT_NONE;
+		kill_part(i);
+		create_part(-1, x, y, PT_FIRE);
+		return 1;
+	} else if(parts[i].life < 100) {
+		parts[i].life--;
+		create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
+	}
+	if((pv[y/CELL][x/CELL] > 4.3f)&&parts[i].tmp>40)
+		parts[i].tmp=39;
+	else if(parts[i].tmp<40&&parts[i].tmp>0)
+		parts[i].tmp--;
+	else if(parts[i].tmp<=0) {
+		t = PT_NONE;
+		kill_part(i);
+		r = create_part(-1, x, y, PT_BCOL);
+		return 1;
+	}
+	for(nx=-2; nx<3; nx++)
+		for(ny=-2; ny<3; ny++)
+			if(x+nx>=0 && y+ny>0 &&
+			   x+nx<XRES && y+ny<YRES && (nx || ny))
+			{
+				r = pmap[y+ny][x+nx];
+				if((r>>8)>=NPART || !r)
+					continue;
+				if(((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM) && 1>(rand()%500))
+				{
+					if(parts[i].life>100) {
+						parts[i].life = 99;
+					}
+				}
+			}
+	return 0;
+}
+
 void update_particles_i(pixel *vid, int start, int inc)
 {
     int i, j, x, y, t, nx, ny, r, a, s, lt, rt, fe, nt, lpv, nearp, pavg;
@@ -1760,40 +1804,8 @@ void update_particles_i(pixel *vid, int start, int inc)
             }
             else if(t==PT_COAL)
             {
-                if(parts[i].life<=0) {
-                    t = PT_NONE;
-                    kill_part(i);
-                    create_part(-1, x, y, PT_FIRE);
-                    goto killed;
-                } else if(parts[i].life < 100) {
-                    parts[i].life--;
-                    create_part(-1, x+rand()%3-1, y+rand()%3-1, PT_FIRE);
-                }
-                if((pv[y/CELL][x/CELL] > 4.3f)&&parts[i].tmp>40)
-                    parts[i].tmp=39;
-                else if(parts[i].tmp<40&&parts[i].tmp>0)
-                    parts[i].tmp--;
-                else if(parts[i].tmp<=0) {
-                    t = PT_NONE;
-                    kill_part(i);
-                    r = create_part(-1, x, y, PT_BCOL);
-                    goto killed;
-                }
-                for(nx=-2; nx<3; nx++)
-                    for(ny=-2; ny<3; ny++)
-                        if(x+nx>=0 && y+ny>0 &&
-                                x+nx<XRES && y+ny<YRES && (nx || ny))
-                        {
-                            r = pmap[y+ny][x+nx];
-                            if((r>>8)>=NPART || !r)
-                                continue;
-                            if(((r&0xFF)==PT_FIRE || (r&0xFF)==PT_PLSM) && 1>(rand()%500))
-                            {
-                                if(parts[i].life>100) {
-                                    parts[i].life = 99;
-                                }
-                            }
-                        }
+				if(ptypes[t].update_func(i))
+					goto killed;
             }
             else if(t==PT_BCOL)
             {
