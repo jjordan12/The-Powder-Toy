@@ -20,7 +20,6 @@
 #include <font.h>
 #include <misc.h>
 
-
 unsigned cmode = CM_FIRE;
 SDL_Surface *sdl_scrn;
 int sdl_scale = 1;
